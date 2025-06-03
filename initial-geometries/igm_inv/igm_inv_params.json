@@ -1,0 +1,41 @@
+{
+    "modules_preproc": [
+        "load_ncdf"
+    ],
+    "modules_process": [
+        "iceflow"
+    ],
+    "modules_postproc": [],
+    "iflo_run_data_assimilation": true,
+    "lncd_input_file": "initial-geometries/igm_inv/temp_igm.nc",
+    "opti_control": [
+        "thk"
+    ],
+    "opti_cost": [
+        "velsurf",
+        "icemask",
+        "thk"
+    ],
+    "opti_usurfobs_std": 0.3,
+    "opti_velsurfobs_std": 0.25,
+    "opti_thkobs_std": 1,
+    "opti_divfluxobs_std": 0.1,
+    "opti_regu_param_thk": 1,
+    "opti_regu_param_slidingco": 1.0e6,
+    "opti_smooth_anisotropy_factor": 0.2,
+    "opti_convexity_weight": 0,
+    "opti_nbitmax": 500,
+    "iflo_save_model": false,
+    "opti_vars_to_save": [
+        "usurf",
+        "thk",
+        "slidingco",
+        "velsurf_mag",
+        "velsurfobs_mag",
+        "divflux",
+        "icemask",
+        "arrhenius",
+        "thkobs",
+        "dhdt"
+    ]
+}
