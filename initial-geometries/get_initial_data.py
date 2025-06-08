@@ -28,6 +28,10 @@ IGM_INVERSION_BASH_SCRIPT = "initial-geometries/igm_inv/igm_run.sh"
 TEMP_IGM_NC = "initial-geometries/igm_inv/temp_igm.nc"
 
 RESULT_NC = "initial-geometries/res.nc"
+RESULT_JSON = "initial-geometries/res.json"
+RESULT_OUTLINES = "initial-geometries/outlines.tar.gz"
+
+# toDo: Add IGM inversion again
 
 
 def main():
@@ -53,18 +57,22 @@ def main():
 
     # Copy the nc-file and delete the temporary gdir
     shutil.copy(gdir.dir + "/gridded_data.nc", RESULT_NC)
+
+    # Also copy the glacier grid for use in OGGM forward simulations
+    shutil.copy(gdir.dir + "/glacier_grid.json", RESULT_JSON)
+    shutil.copy(gdir.dir + "/outlines.tar.gz", RESULT_OUTLINES)
     shutil.rmtree(TEMP_WD)
 
     # OGGM inversion from another temporary gdir (level 4)
     add_oggm_inversion_from_server()
-    
+
     # Carry out IGM inversion and add the resulting thickness
-    add_igm_inversion()
+    # add_igm_inversion()
 
     # Set all thicknesses to NAN outside the mask
     ds_res = xr.open_dataset(RESULT_NC, mode="r+")
     ds_res["millan_ice_thickness"] = ds_res["millan_ice_thickness"].where(ds_res["glacier_mask"] != 0, np.nan)
-    ds_res["igm_inv_thickness"] = ds_res["igm_inv_thickness"].where(ds_res["glacier_mask"] != 0, np.nan)
+    # ds_res["igm_inv_thickness"] = ds_res["igm_inv_thickness"].where(ds_res["glacier_mask"] != 0, np.nan)
     if "cook23_thk" in ds_res:
         ds_res["cook23_thk"] = ds_res["cook23_thk"].where(ds_res["glacier_mask"] != 0, np.nan)
     ds_res.to_netcdf(RESULT_NC, mode="a")
