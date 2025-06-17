@@ -1,4 +1,4 @@
-# Here we load a default Glacier Directory (level 4) and take the historical climate file
+# Here we load a default Glacier Directory (level 3) and take the historical climate file
 # We create a new climate file for forward runs (years 2000-3000) by extending the climate from 1990-2019
 # We add some (monthly) randomness to avoid cyclicity in the data
 # We end up with synthetic climate data representing the conditions (including variability) from 1990 to 2019
@@ -8,14 +8,16 @@ import cftime
 import numpy as np
 import oggm.cfg as cfg
 import oggm.workflow as workflow
-from oggm import DEFAULT_BASE_URL
 import xarray as xr
 
+NO_SPINUP_URL = "https://cluster.klima.uni-bremen.de/~oggm/gdirs/oggm_v1.6/L3-L5_files/2023.3/elev_bands/W5E5"
 
 TEMP_WD = "climate-background/temp"
 RGI_ID = ["RGI60-11.01450"]
 
-sd_scale = 0  # Scaling factor of the standard distribution for random extension
+# Scaling factor of the standard distribution for random extension
+# Use 0 for the monthly mean of climate variables
+sd_scale = 1
 
 seed = 0  # Random seed
 
@@ -25,16 +27,17 @@ reference_climate_period_end = "2019-12-01"
 synthetic_start_date = "2000-01-01"
 synthetic_end_date = "2999-12-01"
 
+simulation_climate_file = "climate-background/simulation_climate.nc"
+
 
 def main():
     cfg.initialize()
 
     cfg.PATHS["working_dir"] = TEMP_WD
 
-    # Get the pre-processed glacier directories
-    climate_gdir = workflow.init_glacier_directories(RGI_ID, prepro_base_url=DEFAULT_BASE_URL, from_prepro_level=4, reset=True, force=True)[0]
+    climate_gdir = workflow.init_glacier_directories(RGI_ID, prepro_base_url=NO_SPINUP_URL, from_prepro_level=3, reset=True, force=True)[0]
 
-    simulation_climate(climate_gdir.dir + "/climate_historical.nc", "climate-background/climate_long.nc")
+    simulation_climate(climate_gdir.dir + "/climate_historical.nc", simulation_climate_file)
 
     check_climate_files(climate_gdir)
 
@@ -115,7 +118,7 @@ def check_climate_files(climate_gdir):
     # Check if the monthly mean of the synthetic climate equals the original data
 
     ds_historic = xr.open_dataset(climate_gdir.dir + "/climate_historical.nc")
-    ds_synthetic = xr.open_dataset("climate-background/climate_long.nc")
+    ds_synthetic = xr.open_dataset(simulation_climate_file)
 
     hist_values = ds_historic.sel(time=slice(reference_climate_period_start, reference_climate_period_end))
 

@@ -1,6 +1,6 @@
 # This script uses the OGGM shop to generate a nc-file containing initial data for both IGM and OGGM
 # We do not need any duplicate fields, because the individual nc files for forward simulations are created later on
-# The initial geometries include data from Farinotti, Millan and Cook (where available)
+# The initial geometries include data from Farinotti, Millan and Cook from the OGGM shop (where available)
 # Moreover, IGM and OGGM inversions with default parameter settings are carried out to generate additional ice thickness options
 # Code is based on Fabien Maussion's code in IGM oggm shop module
 
@@ -14,8 +14,9 @@ import oggm.cfg as cfg
 import oggm.utils as utils
 import oggm.workflow as workflow
 import oggm.tasks as tasks
-from oggm import DEFAULT_BASE_URL
 import xarray as xr
+
+NO_SPINUP_URL = "https://cluster.klima.uni-bremen.de/~oggm/gdirs/oggm_v1.6/L3-L5_files/2023.3/elev_bands/W5E5"
 
 RGI_ID = ["RGI60-06.00416"]
 RGI_ID = ["RGI60-11.01450"]
@@ -27,9 +28,8 @@ IGM_INVERSION_PARAM_FILE = "initial-geometries/igm_inv/igm_inv_params.json"
 IGM_INVERSION_BASH_SCRIPT = "initial-geometries/igm_inv/igm_run.sh"
 TEMP_IGM_NC = "initial-geometries/igm_inv/temp_igm.nc"
 
-RESULT_NC = "initial-geometries/res.nc"
-RESULT_JSON = "initial-geometries/res.json"
-RESULT_OUTLINES = "initial-geometries/outlines.tar.gz"
+OUT_FOLDER_NAME = "res"
+FILES_TO_STORE = ["gridded_data.nc", "glacier_grid.json", "outlines.tar.gz"]
 
 # toDo: Add IGM inversion again
 
@@ -55,55 +55,72 @@ def main():
     add_thicknesses_from_shop(gdirs)
     add_additional_data_for_igm_inversion(gdirs)
 
-    # Copy the nc-file and delete the temporary gdir
-    shutil.copy(gdir.dir + "/gridded_data.nc", RESULT_NC)
-
-    # Also copy the glacier grid for use in OGGM forward simulations
-    shutil.copy(gdir.dir + "/glacier_grid.json", RESULT_JSON)
-    shutil.copy(gdir.dir + "/outlines.tar.gz", RESULT_OUTLINES)
-    shutil.rmtree(TEMP_WD)
-
     # OGGM inversion from another temporary gdir (level 4)
-    add_oggm_inversion_from_server()
+    add_oggm_inversion_from_server(gdir)
 
     # Carry out IGM inversion and add the resulting thickness
     # add_igm_inversion()
 
     # Set all thicknesses to NAN outside the mask
-    ds_res = xr.open_dataset(RESULT_NC, mode="r+")
+    set_outside_to_nan(gdir)
+
+    rename_cook_var(gdir)
+
+    # Copy the files and delete the temporary gdir
+    if not os.path.exists("initial-geometries/" + OUT_FOLDER_NAME):
+        os.makedirs("initial-geometries/" + OUT_FOLDER_NAME)
+    for file in FILES_TO_STORE:
+        shutil.copy(gdir.dir + "/" + file, "initial-geometries/" + OUT_FOLDER_NAME + "/" + file)
+    shutil.rmtree(TEMP_WD)
+
+
+def rename_cook_var(gdir):
+    ds = xr.open_dataset(gdir.dir + "/gridded_data.nc", mode="r+")
+    ds.load()  # Load all into memory
+    ds.close()  # Close file handle before overwriting
+
+    if "cook23_thk" in ds:
+        ds = ds.rename({"cook23_thk": "cook23_ice_thickness"})
+
+    ds.to_netcdf(gdir.dir + "/gridded_data.nc", mode="w")
+
+
+def set_outside_to_nan(gdir):
+    ds_res = xr.open_dataset(gdir.dir + "/gridded_data.nc", mode="r+")
     ds_res["millan_ice_thickness"] = ds_res["millan_ice_thickness"].where(ds_res["glacier_mask"] != 0, np.nan)
     # ds_res["igm_inv_thickness"] = ds_res["igm_inv_thickness"].where(ds_res["glacier_mask"] != 0, np.nan)
     if "cook23_thk" in ds_res:
         ds_res["cook23_thk"] = ds_res["cook23_thk"].where(ds_res["glacier_mask"] != 0, np.nan)
-    ds_res.to_netcdf(RESULT_NC, mode="a")
+    ds_res.to_netcdf(gdir.dir + "/gridded_data.nc", mode="a")
+    ds_res.close()
 
 
-def add_igm_inversion():
+def add_igm_inversion(gdir):
     # We need to rename the variables in the nc for IGM
-    oggm_nc_to_igm_nc(RESULT_NC, TEMP_IGM_NC)
+    oggm_nc_to_igm_nc(gdir.dir + "/gridded_data.nc", TEMP_IGM_NC)
 
     # Run igm inversion (includes cleaning of temp files)
     subprocess.run([IGM_INVERSION_BASH_SCRIPT, IGM_INVERSION_PARAM_FILE])
 
     # Copy thickness from IGM inversion to the main nc file
-    copy_variable_between_netcdfs("geology-optimized.nc", RESULT_NC, "thk", "igm_inv_thickness")
+    copy_variable_between_netcdfs("geology-optimized.nc", gdir.dir + "/gridded_data.nc", "thk", "igm_inv_thickness")
 
     # Clean
     os.remove("geology-optimized.nc")
     os.remove(TEMP_IGM_NC)
 
 
-def add_oggm_inversion_from_server():
+def add_oggm_inversion_from_server(gdir):
     cfg.PATHS["working_dir"] = TEMP_WD_OGGM_INVERSION
 
     # Get the pre-processed glacier directories
-    inversion_gdir = workflow.init_glacier_directories(RGI_ID, prepro_base_url=DEFAULT_BASE_URL, from_prepro_level=4, reset=True, force=True)[0]
+    inversion_gdir = workflow.init_glacier_directories(RGI_ID, prepro_base_url=NO_SPINUP_URL, from_prepro_level=3, reset=True, force=True)[0]
 
     # Thickness from inversion to 2D Field
     tasks.distribute_thickness_per_altitude(inversion_gdir)
 
     # Copy to results nc
-    copy_variable_between_netcdfs(inversion_gdir.dir + "/gridded_data.nc", RESULT_NC, "distributed_thickness", "oggm_inv_distributed")
+    copy_variable_between_netcdfs(inversion_gdir.dir + "/gridded_data.nc", gdir.dir + "/gridded_data.nc", "distributed_thickness", "oggm_inv_distributed")
 
     # Clean gdir
     shutil.rmtree(TEMP_WD_OGGM_INVERSION)
