@@ -1,0 +1,26 @@
+{
+    "modules_preproc": ["load_ncdf"],
+    "modules_process": ["clim_oggm", "smb_oggm","iceflow",  "time", "thk"],
+    "modules_postproc": ["write_ts", "print_info"],
+  
+    // Files
+    "lncd_input_file" : "../../workflow_res/RGI60-11.01450/input/input_saved.nc",
+    "iflo_emulator": "../../workflow_res/RGI60-11.01450/inversions/iceflow-model",
+    "wts_output_file": "../../workflow_res/RGI60-11.01450/runs/igm_with_climate.nc",
+
+    // Climate
+    "smb_mb_calib_file" : "../../workflow_res/RGI60-11.01450/calibration/mb_calib_oggm.json",
+    "clim_mb_calib_file" : "../../workflow_res/RGI60-11.01450/calibration/mb_calib_oggm.json",
+    "clim_forward_climate_file" : "../../workflow_res/RGI60-11.01450/climate/gcm_dataACCESS-CM2_.nc",
+
+    // Settings
+    "time_start": 2000.0,
+    "time_end": 2300.0,
+    
+    // Output
+    "time_save": 10.0,
+    "iflo_type": "emulated"
+    //"wncd_vars_to_save": ["usurf", "thk", "slidingco", "velsurf_mag", "velsurfobs_mag", "divflux", "icemask", "arrhenius", "thkobs", "smb", "volume"],
+    //"wncd_output_file": "../../four_runs/results/with_oggm_sliding/IGM_consensus.nc",
+  }
+  
