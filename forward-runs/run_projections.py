@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from common.utils import *
 
 if len(sys.argv) <= 1:
-    RGI_ID = "RGI60-11.01450"
+    RGI_ID = "RGI60-11.00897"
 else:
     RGI_ID = sys.argv[1]
 
@@ -92,12 +92,16 @@ def init_oggm_gdir():
 def oggm_forward(thickness, mb_calib, gdir, sliding=False):
     shutil.copy(CALIBS_PATH + "/" + mb_calib + ".json", gdir.dir + "/mb_calib.json")
     prepare_simulation(gdir, thk_var=thickness)
-    id = "_oggm_"
 
     if sliding:
         cfg.PARAMS["fs"] = 5.7e-20
         cfg.PARAMS["inversion_fs"] = 5.7e-20
         id = "_oggmslide_"
+
+    else:
+        cfg.PARAMS["fs"] = 0
+        cfg.PARAMS["inversion_fs"] = 0
+        id = "_oggm_"
 
     tasks.run_from_climate_data(
         gdir,
