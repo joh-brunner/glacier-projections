@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from common.utils import *
 
 if len(sys.argv) <= 1:
-    RGI_ID = "RGI60-11.00897"
+    RGI_ID = "RGI60-11.01450"
 else:
     RGI_ID = sys.argv[1]
 
@@ -92,12 +92,12 @@ def init_oggm_gdir():
 def oggm_forward(thickness, mb_calib, gdir, sliding=False):
     shutil.copy(CALIBS_PATH + "/" + mb_calib + ".json", gdir.dir + "/mb_calib.json")
     prepare_simulation(gdir, thk_var=thickness)
-    out_name = "_oggm_"
+    id = "_oggm_"
 
     if sliding:
         cfg.PARAMS["fs"] = 5.7e-20
         cfg.PARAMS["inversion_fs"] = 5.7e-20
-        out_name = "_oggmslide_"
+        id = "_oggmslide_"
 
     tasks.run_from_climate_data(
         gdir,
@@ -105,17 +105,15 @@ def oggm_forward(thickness, mb_calib, gdir, sliding=False):
         ye=end_year,
         climate_filename="climate_historical",
         climate_input_filesuffix="",
-        output_filesuffix="_" + thickness + "_" + mb_calib + "_" + out_name,
+        output_filesuffix="_" + thickness + "_" + mb_calib + "_" + id,
         store_model_geometry=False,
     )
 
     if not os.path.exists("forward-runs/" + OUT_FOLDER_NAME):
         os.makedirs("forward-runs/" + OUT_FOLDER_NAME)
 
-    file_name = "model_diagnostics" + "_" + thickness + "_" + mb_calib + "_" + out_name + ".nc"
-
-    out_name = "forward-runs/" + OUT_FOLDER_NAME + "/" + thickness + out_name + mb_calib + ".nc"
-
+    file_name = "model_diagnostics" + "_" + thickness + "_" + mb_calib + "_" + id + ".nc"
+    out_name = "forward-runs/" + OUT_FOLDER_NAME + "/" + thickness + id + mb_calib + ".nc"
     shutil.copy(gdir.dir + "/" + file_name, out_name)
 
 
