@@ -24,7 +24,7 @@ def save_json_to_file(data, filename):
         json.dump(data, file, indent=4)
 
 
-def oggm_nc_to_igm_nc(oggm_nc_file, igm_nc_file, thickness):
+def oggm_nc_to_igm_nc(oggm_nc_file, igm_nc_file, thickness = "consensus_ice_thickness"):
     ds_oggm = xr.open_dataset(oggm_nc_file, mode="r+")
 
     # Rename the vars for IGM inversion

@@ -1,6 +1,6 @@
 # Here we load another default Glacier Directory (level 3) and carry out three different TI model calibrations
 # One is the default OGGM informed threestep calibration
-# Second is based on the order of paramater adjustement from Huss and Hock 2015
+# Second is based on the order of parameter adjustement from Huss and Hock 2015
 # Third is an experimental calibration where only ddf (melt_f) is adjusted and precip_f (1) and temp_bias (0) are kept constant
 
 import os
@@ -9,12 +9,16 @@ import sys
 import oggm.cfg as cfg
 import oggm.workflow as workflow
 
+if len(sys.argv) <= 1:
+    RGI_ID = "RGI60-11.01450"
+else:
+    RGI_ID = sys.argv[1]
+
 TEMP_WD = "mass-balance-calibrations/temp"
-RGI_ID = ["RGI60-11.01450"]
 
 NO_SPINUP_URL = "https://cluster.klima.uni-bremen.de/~oggm/gdirs/oggm_v1.6/L3-L5_files/2023.3/elev_bands/W5E5"
 
-OUT_FOLDER_NAME = "res"
+OUT_FOLDER_NAME = "res/" + RGI_ID
 
 
 def main():

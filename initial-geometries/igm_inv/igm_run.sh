@@ -9,3 +9,4 @@ rm costs.dat
 rm optimize.nc
 rm rms_std.dat
 rm clean.sh
+rm convergence.png
