@@ -1,0 +1,26 @@
+{
+    "modules_preproc": [
+        "load_ncdf"
+    ],
+    "modules_process": [
+        "clim_oggm",
+        "smb_oggm",
+        "iceflow",
+        "time",
+        "thk"
+    ],
+    "modules_postproc": [
+        "write_ts",
+        "print_info"
+    ],
+    "lncd_input_file": "forward-runs/igm_forward_temp.nc",
+    "iflo_emulator": "",
+    "wts_output_file": "forward-runs/simulation_res/RGI60-08.02650/oggm_inv_distributed_igm_meltf_only.nc",
+    "smb_mb_calib_file": "mass-balance-calibrations/res/RGI60-08.02650/meltf_only.json",
+    "clim_mb_calib_file": "mass-balance-calibrations/res/RGI60-08.02650/meltf_only.json",
+    "clim_forward_climate_file": "climate-background/res/RGI60-08.02650/simulation_climate.nc",
+    "time_start": 2000,
+    "time_end": 2500,
+    "time_save": 1.0,
+    "iflo_type": "emulated"
+}

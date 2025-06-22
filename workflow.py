@@ -2,7 +2,7 @@ import os
 import subprocess
 import sys
 
-RGI_ID = "RGI60-11.00897"
+RGI_ID = "RGI60-08.02650"
 
 
 def main():

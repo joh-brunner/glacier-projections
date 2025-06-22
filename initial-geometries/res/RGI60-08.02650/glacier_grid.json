@@ -1,0 +1,1 @@
+{"proj": "+proj=tmerc +lat_0=0 +lon_0=5.672 +k=0.9996 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs", "x0y0": [-4239.830071564565, 6850288.44222401], "nxny": [248, 231], "dxdy": [34.0, -34.0], "pixel_ref": "center"}

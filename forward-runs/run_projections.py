@@ -62,7 +62,7 @@ def main():
             print("Processing " + thickness + " | " + calib)
             oggm_forward(thickness, calib, gdir)
             oggm_forward(thickness, calib, gdir, sliding=True)
-            # igm_forward(thickness, calib)
+            igm_forward(thickness, calib)
 
     # Clean the gdir
     shutil.rmtree(TEMP_WD)
