@@ -94,7 +94,7 @@ def initialize_oggm(WD):
 
 
 def get_outlines():
-    rgi_ids = utils.get_rgi_glacier_entities([RGI_ID])
+    rgi_ids = utils.get_rgi_glacier_entities([RGI_ID], version = "62")
     return rgi_ids
 
 
