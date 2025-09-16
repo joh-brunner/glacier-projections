@@ -41,6 +41,17 @@ def main():
     cfg.PARAMS["use_winter_prcp_fac"] = False
     cfg.PARAMS["prcp_fac"] = 1
 
+    #cfg.PARAMS["melt_f"] = 4.5
+    #cfg.PARAMS["melt_f_min"] = 2.65
+    #cfg.PARAMS["melt_f_max"] = 6.75
+    cfg.PARAMS["melt_f"] = 6
+    cfg.PARAMS["melt_f_min"] = 3.5
+    cfg.PARAMS["melt_f_max"] = 9
+
+    cfg.PARAMS["prcp_fac"] = 1.5
+    cfg.PARAMS["prcp_fac_min"] = 0.8
+    cfg.PARAMS["prcp_fac_max"] = 2
+
     # 2. Here we keep the standard ranges from OGGM for W5E5 climate but use the calibration order from Huss and Hock 2025
     workflow.tasks.mb_calibration_from_geodetic_mb(
         mb_gdir,
@@ -52,13 +63,11 @@ def main():
 
     # 3. This is a rather experimental calibration where only the the ddf is adjusted and no climate correction is applied
     #    Min and max values are from Schuster 2023
-    cfg.PARAMS["melt_f_min"] = 0.33
-    cfg.PARAMS["melt_f_max"] = 33
     workflow.tasks.mb_calibration_from_geodetic_mb(
         mb_gdir,
         calibrate_param1="melt_f",
-        calibrate_param2=None,
-        calibrate_param3=None,
+        calibrate_param2="prcp_fac",
+        calibrate_param3="temp_bias",
         filesuffix="_meltf_only",
     )
 

@@ -105,6 +105,44 @@ def simulation_climate(climate_data_file, out):
     # Convert to arrays
     future_prcp = np.array(future_prcp)
     future_temp = np.array(future_temp)
+    
+    repeated = False
+    if repeated:
+        # Generate synthetic future data by repeating observed monthly means
+        future_prcp = []
+        future_temp = []
+
+        obs_temp = selected_time.temp.values  # e.g. shape (n_months,)
+        obs_prcp = selected_time.prcp.values
+        n_obs_months = len(obs_temp)
+
+        for i, t in enumerate(monthly_dates):
+            idx = i % n_obs_months  # wrap around when exceeding observed record
+            future_temp.append(obs_temp[idx])
+            prcp_val = max(0, obs_prcp[idx])  # keep prcp non-negative
+            future_prcp.append(prcp_val)
+
+        future_temp = np.array(future_temp)
+        future_prcp = np.array(future_prcp)
+
+    shuffle_years = False
+    if shuffle_years:
+        # --- Step 2: shuffle the years in the repeated dataset ---
+        n_future_months = len(future_temp)
+        n_future_years = n_future_months // 12
+
+        # Reshape into years × 12 months
+        future_temp_years = future_temp.reshape(n_future_years, 12)
+        future_prcp_years = future_prcp.reshape(n_future_years, 12)
+
+        # Shuffle the order of years
+        rng = np.random.default_rng(seed)
+        shuffled_indices = rng.permutation(n_future_years)
+
+        future_temp = future_temp_years[shuffled_indices].reshape(-1)
+        future_prcp = future_prcp_years[shuffled_indices].reshape(-1)
+
+
 
     # Create the new extended dataset
     ds_synthetic = xr.Dataset(
